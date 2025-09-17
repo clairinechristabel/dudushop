@@ -29,6 +29,9 @@ ALLOWED_HOSTS = ["localhost", "127.0.0.1", "clairine-christabel-dudushop.pbp.cs.
 
 
 # Application definition
+CSRF_TRUSTED_ORIGINS = [
+    "https://clairine-christabel-dudushop.pbp.cs.ui.ac.id/"
+]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
