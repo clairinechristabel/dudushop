@@ -1,0 +1,10 @@
+<h1>Detail Product</h1>
+<img src="{{ product.thumbnail }}" width="200">
+<p><strong>Nama:</strong> {{ product.name }}</p>
+<p><strong>Harga:</strong> Rp{{ product.price }}</p>
+<p><strong>Deskripsi:</strong> {{ product.description }}</p>
+<p><strong>Kategori:</strong> {{ product.category }}</p>
+
+<form action="{% url 'main:show_main' %}">
+    <button type="submit">Kembali</button>
+</form>

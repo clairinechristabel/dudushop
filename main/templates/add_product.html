@@ -1,0 +1,10 @@
+<h1>Add Product</h1>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="Submit">Simpan</button>
+</form>
+
+<form action="{% url 'main:show_main' %}">
+    <button type="submit">Kembali</button>
+</form>

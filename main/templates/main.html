@@ -1,5 +1,32 @@
 <h1>{{ shop }}</h1>
+
 <h5>Name: </h5>
 <p>{{ name }}</p>
 <h5>Class: </h5>
 <p>{{ class }}</p>
+
+<a href="{% url 'main:add_product' %}">
+  <button>+ Add Product</button>
+</a>
+
+<hr>
+
+<h1>Daftar Produk</h1>
+<ul>
+    {% for product in product_list %}
+        <li>
+            <img src="{{ product.thumbnail }}" width="100">
+            <strong>{{ product.name }}</strong> - Rp{{ product.price }}
+            ({{ product.category }}) |
+
+            {% if product.is_featured %}
+                <b>Featured</b>
+            {% endif %}
+
+            <form action="{% url 'main:detail_product' product.id %}" style="display:inline;">
+                <button type="submit">Detail</button>
+            </form>
+            
+        </li>
+    {% endfor %}
+</ul>
