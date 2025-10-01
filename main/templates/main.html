@@ -1,46 +1,96 @@
-<h1>{{ shop }}</h1>
+{% extends 'base.html' %}
+{% load static %}
 
-<h5>Name: </h5>
-<p>{{ name }}</p>
-<h5>Class: </h5>
-<p>{{ class }}</p>
+{% block meta %}
+<title>Dudushop - Shop</title>
+{% endblock meta %}
 
-<a href="{% url 'main:add_product' %}">
-  <button>+ Add Product</button>
-</a>
+{% block content %}
+{% include 'navbar.html' %}
 
-<a href="{% url 'main:logout' %}">
-  <button>Logout</button>
-</a>
+<!-- Hero Background -->
+<div class="relative w-full h-96 bg-cover bg-center"
+     style="background-image: url('{% static "images/main-background.jpeg" %}');">
+  <div class="absolute inset-0 flex items-center justify-center">
+    <h1 class="text-4xl md:text-6xl font-bold text-white drop-shadow-lg">
+      Welcome to Dudushop
+    </h1>
+  </div>
+</div>
 
-<h5>Sesi terakhir login: {{ last_login }}</h5>
+<!-- Product Container -->
+<div class="relative -mt-16 z-10">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="bg-white rounded-3xl shadow-lg p-8">
 
-<hr>
+      <!-- Filter Section -->
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
+        <h2 class="text-2xl font-bold text-pink-600 mb-4 sm:mb-0">Our Products</h2>
+        <div class="flex space-x-3">
+          <a href="?filter=all" 
+             class="{% if request.GET.filter == 'all' or not request.GET.filter %} bg-pink-400 text-white {% else %} bg-white text-gray-700 border border-pink-300 {% endif %} px-4 py-2 rounded-xl font-medium transition hover:bg-pink-500 hover:text-white">
+            All Products
+          </a>
+          <a href="?filter=my" 
+             class="{% if request.GET.filter == 'my' %} bg-pink-400 text-white {% else %} bg-white text-gray-700 border border-pink-300 {% endif %} px-4 py-2 rounded-xl font-medium transition hover:bg-pink-500 hover:text-white">
+            My Products
+          </a>
+        </div>
+      </div>
 
+      <!-- Product Grid -->
+      {% if not product_list %}
+        <div class="bg-pink-50 rounded-xl border border-pink-200 p-12 text-center">
+          <div class="w-32 h-32 mx-auto mb-4">
+            <img src="{% static 'image/no-product.png' %}" alt="No product" class="w-full h-full object-contain">
+          </div>
+          <h3 class="text-lg font-medium text-gray-900 mb-2">No products found</h3>
+          <p class="text-gray-500 mb-6">Add your first product and start selling at Dudushop.</p>
+        </div>
+      {% else %}
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          {% for product in product_list %}
+            <div class="bg-white rounded-2xl border border-pink-200 shadow hover:shadow-md transition overflow-hidden flex flex-col">
+              <img src="{{ product.thumbnail }}" alt="{{ product.name }}" 
+                   class="w-full h-48 object-cover">
+              <div class="p-4 flex flex-col flex-1">
+                <h3 class="text-lg font-semibold text-gray-900">{{ product.name }}</h3>
+                <p class="text-gray-600 mb-2">Rp{{ product.price }} • {{ product.category }}</p>
+                {% if product.is_featured %}
+                  <span class="inline-block text-xs text-pink-600 font-medium bg-pink-50 border border-pink-200 px-2 py-1 rounded-lg mb-2">
+                    Featured
+                  </span>
+                {% endif %}
 
-<a href="?filter=all">
-    <button type="button">All Products</button>
-</a>
-<a href="?filter=my">
-    <button type="button">My Products</button>
-</a> 
+                <div class="mt-auto flex space-x-3">
+                  <!-- Detail Button -->
+                  <a href="{% url 'main:detail_product' product.id %}" 
+                     class="flex-1 text-center px-4 py-2 bg-pink-400 text-white rounded-xl font-medium hover:bg-pink-500 transition">
+                    Detail
+                  </a>
 
-<h1>Daftar Produk</h1>
-<ul>
-    {% for product in product_list %}
-        <li>
-            <img src="{{ product.thumbnail }}" width="100">
-            <strong>{{ product.name }}</strong> - Rp{{ product.price }}
-            ({{ product.category }}) |
+                  {% if request.GET.filter == 'my' %}
+                    <!-- Edit Button -->
+                    <a href="{% url 'main:edit_product' product.id %}" 
+                       class="px-4 py-2 border border-blue-300 rounded-xl text-blue-500 hover:bg-blue-50 transition">
+                      Edit
+                    </a>
+                    <!-- Delete Button -->
+                    <form method="POST" action="{% url 'main:delete_product' product.id %}">
+                      {% csrf_token %}
+                      <button type="submit" class="px-4 py-2 border border-red-300 rounded-xl text-red-500 hover:bg-red-50 transition">
+                        Delete
+                      </button>
+                    </form>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
 
-            {% if product.is_featured %}
-                <b>Featured</b>
-            {% endif %}
-
-            <form action="{% url 'main:detail_product' product.id %}" style="display:inline;">
-                <button type="submit">Detail</button>
-            </form>
-            
-        </li>
-    {% endfor %}
-</ul>
+    </div>
+  </div>
+</div>
+{% endblock content %}

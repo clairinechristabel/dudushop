@@ -1,10 +1,71 @@
-<h1>Detail Product</h1>
-<img src="{{ product.thumbnail }}" width="200">
-<p><strong>Nama:</strong> {{ product.name }}</p>
-<p><strong>Harga:</strong> Rp{{ product.price }}</p>
-<p><strong>Deskripsi:</strong> {{ product.description }}</p>
-<p><strong>Kategori:</strong> {{ product.category }}</p>
+{% extends 'base.html' %}
+{% load static %}
 
-<form action="{% url 'main:show_main' %}">
-    <button type="submit">Kembali</button>
-</form>
+{% block meta %}
+<title>{{ product.name }} - Dudushop</title>
+{% endblock meta %}
+
+{% block content %}
+<div class="bg-gray-50 w-full min-h-screen">
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    
+    <!-- Back Navigation -->
+    <div class="mb-6">
+      <a href="{% url 'main:show_main' %}" 
+         class="text-gray-600 hover:text-gray-900 font-medium transition-colors">
+        ← Back to Products
+      </a>
+    </div>
+
+    <!-- Product Detail Card -->
+    <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+      
+      <!-- Thumbnail -->
+      {% if product.thumbnail %}
+        <img src="{{ product.thumbnail }}" alt="{{ product.name }}" 
+             class="w-full h-80 object-cover">
+      {% endif %}
+
+      <!-- Content -->
+      <div class="p-6 sm:p-8">
+        <div class="flex flex-wrap items-center gap-2 mb-4">
+          <span class="inline-flex items-center px-3 py-1 rounded-md text-xs font-medium bg-pink-100 text-pink-700">
+            {{ product.category }}
+          </span>
+          {% if product.is_featured %}
+            <span class="inline-flex items-center px-3 py-1 rounded-md text-xs font-medium bg-yellow-100 text-yellow-800">
+              Featured
+            </span>
+          {% endif %}
+        </div>
+
+        <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 leading-tight mb-4">
+          {{ product.name }}
+        </h1>
+        
+        <p class="text-xl font-semibold text-pink-600 mb-6">
+          Rp{{ product.price }}
+        </p>
+
+        <div class="text-gray-700 leading-relaxed whitespace-pre-line text-base sm:text-lg mb-8">
+          {{ product.description }}
+        </div>
+
+        <!-- Actions -->
+        <div class="flex gap-3">
+          <a href="{% url 'main:show_main' %}" 
+             class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors">
+            Back
+          </a>
+          {% if request.GET.filter == 'my' %}
+            <a href="{% url 'main:edit_product' product.id %}" 
+               class="px-6 py-3 bg-pink-400 text-white rounded-lg font-medium hover:bg-pink-500 transition-colors">
+              Edit Product
+            </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}
