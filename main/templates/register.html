@@ -7,109 +7,150 @@
 
 {% block content %}
 <div class="w-full min-h-screen flex items-center justify-center p-8 bg-cover bg-center" 
-     style="background-image: url('{% static "images/background.jpeg" %}');">
-  <div class="max-w-md w-full">
-    <div class="bg-white rounded-2xl border border-gray-200 p-8 form-style shadow-lg">
-      <div class="text-center mb-8">
-        <h2 class="text-2xl font-semibold text-gray-900 mb-2">Join Us</h2>
-        <p class="text-gray-500">Create your Dudushop account</p>
-      </div>
-
-      <!-- Form Errors Display -->
-      {% if form.non_field_errors %}
-        <div class="mb-6">
-          {% for error in form.non_field_errors %}
-            <div class="px-4 py-3 rounded-xl text-sm border bg-red-50 border-red-200 text-red-700">
-              {{ error }}
+    style="background-image: url('{% static "images/background.jpeg" %}');">
+    <div class="max-w-md w-full">
+        <div class="bg-white rounded-2xl border border-gray-200 p-8 form-style shadow-lg">
+            <div class="text-center mb-8">
+                <h2 class="text-2xl font-semibold text-gray-900 mb-2">Join Us</h2>
+                <p class="text-gray-500">Create your Dudushop account</p>
             </div>
-          {% endfor %}
-        </div>
-      {% endif %}
 
-      {% if form.errors %}
-        <div class="mb-6">
-          {% for field, errors in form.errors.items %}
-            {% if field != '__all__' %}
-              {% for error in errors %}
-                <div class="px-4 py-3 rounded-xl text-sm border bg-red-50 border-red-200 text-red-700 mb-2">
-                  <strong>{{ field|title }}:</strong> {{ error }}
+            <!-- Area untuk menampilkan pesan sukses/error AJAX -->
+            <div id="ajax-message-display" class="mb-6 hidden">
+                <!-- Konten pesan akan diinjeksi di sini -->
+            </div>
+
+            <form method="POST" 
+                  id="registerForm" 
+                  action="{% url 'main:register' %}"
+                  onsubmit="handleRegister(event)" 
+                  class="space-y-5">
+                {% csrf_token %}
+                
+                <div>
+                    <label for="id_username" class="block text-sm font-medium text-gray-700 mb-2">Username</label>
+                    <input 
+                        id="id_username" 
+                        name="username" 
+                        type="text" 
+                        required 
+                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-pink-400 transition duration-200" 
+                        placeholder="Choose a username">
                 </div>
-              {% endfor %}
-            {% endif %}
-          {% endfor %}
-        </div>
-      {% endif %}
 
-      <form method="POST" action="" class="space-y-5">
-        {% csrf_token %}
-        
-        <div>
-          <label for="username" class="block text-sm font-medium text-gray-700 mb-2">Username</label>
-          <input 
-            id="username" 
-            name="username" 
-            type="text" 
-            required 
-            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-pink-400 transition duration-200" 
-            placeholder="Choose a username">
-        </div>
+                <div>
+                    <label for="id_password1" class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                    <input 
+                        id="id_password1" 
+                        name="password1" 
+                        type="password" 
+                        required 
+                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-pink-400 transition duration-200" 
+                        placeholder="Create a password">
+                </div>
 
-        <div>
-          <label for="password1" class="block text-sm font-medium text-gray-700 mb-2">Password</label>
-          <input 
-            id="password1" 
-            name="password1" 
-            type="password" 
-            required 
-            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-pink-400 transition duration-200" 
-            placeholder="Create a password">
-        </div>
+                <div>
+                    <label for="id_password2" class="block text-sm font-medium text-gray-700 mb-2">Confirm Password</label>
+                    <input 
+                        id="id_password2" 
+                        name="password2" 
+                        type="password" 
+                        required 
+                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-pink-400 transition duration-200" 
+                        placeholder="Confirm your password">
+                </div>
 
-        <div>
-          <label for="password2" class="block text-sm font-medium text-gray-700 mb-2">Confirm Password</label>
-          <input 
-            id="password2" 
-            name="password2" 
-            type="password" 
-            required 
-            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-pink-400 transition duration-200" 
-            placeholder="Confirm your password">
-        </div>
+                <button 
+                    type="submit" 
+                    id="submitBtn"
+                    class="w-full bg-pink-400 text-white font-medium py-3 px-4 rounded-2xl hover:bg-pink-500 transition duration-200">
+                    Create Account
+                </button>
+            </form>
 
-        <button 
-          type="submit" 
-          class="w-full bg-pink-400 text-white font-medium py-3 px-4 rounded-2xl hover:bg-pink-500 transition duration-200">
-          Create Account
-        </button>
-      </form>
-
-      <!-- Messages Display -->
-      {% if messages %}
-        <div class="mt-6">
-          {% for message in messages %}
-            <div class="px-4 py-3 rounded-xl text-sm border
-                {% if message.tags == 'success' %}
-                  bg-pink-50 border-pink-200 text-pink-700
-                {% elif message.tags == 'error' %}
-                  bg-red-50 border-red-200 text-red-700
-                {% else %}
-                  bg-gray-50 border-gray-200 text-gray-700
-                {% endif %}">
-              {{ message }}
+            <div class="mt-6 text-center pt-6 border-t border-gray-200">
+                <p class="text-gray-500 text-sm">
+                    Already have an account? 
+                    <a href="{% url 'main:login' %}" class="text-pink-400 hover:text-pink-500 font-medium">
+                        Sign In 
+                    </a>
+                </p>
             </div>
-          {% endfor %}
         </div>
-      {% endif %}
-
-      <div class="mt-6 text-center pt-6 border-t border-gray-200">
-        <p class="text-gray-500 text-sm">
-          Already have an account? 
-          <a href="{% url 'main:login' %}" class="text-pink-400 hover:text-pink-500 font-medium">
-            Sign In 
-          </a>
-        </p>
-      </div>
     </div>
-  </div>
 </div>
+
+<script>
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== "") {
+            const cookies = document.cookie.split(";");
+            for (let cookie of cookies) {
+                cookie = cookie.trim();
+                if (cookie.startsWith(name + "=")) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    function displayMessage(message, isSuccess) {
+        const msgDivContainer = document.getElementById('ajax-message-display');
+        
+        msgDivContainer.innerHTML = `
+            <div class="px-4 py-3 rounded-xl text-sm border 
+                ${isSuccess ? 'bg-green-50 border-green-200 text-green-700' : 'bg-red-50 border-red-200 text-red-700'}">
+                ${message}
+            </div>
+        `;
+        msgDivContainer.classList.remove('hidden');
+    }
+
+    async function handleRegister(e) {
+        e.preventDefault();
+        
+        const form = document.getElementById('registerForm');
+        const submitBtn = document.getElementById('submitBtn');
+        
+        document.getElementById('ajax-message-display').classList.add('hidden');
+        submitBtn.disabled = true;
+        submitBtn.innerText = 'Creating Account...';
+
+        try {
+            const response = await fetch(form.action, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                },
+                body: new FormData(form),
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                displayMessage(data.message, true);
+                form.reset();
+            } else {
+                let errorMessage = data.message;
+                
+                if (data.errors) {
+                    errorMessage += '<br>';
+                    for (const field in data.errors) {
+                        const fieldName = field === '__all__' ? 'General Error' : field.charAt(0).toUpperCase() + field.slice(1);
+                        errorMessage += `<strong>${fieldName}:</strong> ${data.errors[field].join(', ')}<br>`;
+                    }
+                }
+                displayMessage(errorMessage, false);
+            }
+        } catch (error) {
+            console.error('Fetch Error:', error);
+            displayMessage('An unexpected network or server error occurred. Please try again.', false);
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerText = 'Create Account';
+        }
+    }
+</script>
 {% endblock content %}

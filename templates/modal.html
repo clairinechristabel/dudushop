@@ -1,0 +1,67 @@
+<div id="addProductModal"
+    class="hidden fixed inset-0 bg-gray-900 bg-opacity-40 z-50 overflow-y-auto flex items-start justify-center p-4">
+    <div class="bg-white rounded-lg border border-gray-200 w-full max-w-lg p-6 sm:p-8 shadow-md mt-20 mb-10">
+
+        <div class="flex justify-between items-start mb-6">
+            <div>
+                <h1 id="modalTitle" class="text-2xl font-bold text-gray-900 mb-2">Add New Product</h1>
+                <p id="modalSubtitle" class="text-gray-600 text-sm">Fill in the product details below</p>
+            </div>
+            <button type="button" id="closeModalBtn" class="text-gray-500 hover:text-gray-800 text-2xl leading-none">&times;</button>
+        </div>
+
+        <form id="addProductForm" class="space-y-6">
+            {% csrf_token %}
+          
+            <input type="hidden" name="product_id" id="product_id_input">
+          
+            <div>
+                <label for="product_name" class="block text-sm font-medium text-gray-700 mb-2">Product Name</label>
+                <input type="text" name="name" id="product_name"
+                    class="w-full border-gray-300 rounded-md shadow-sm focus:ring-pink-400 focus:border-pink-400" required>
+            </div>
+
+            <div>
+                <label for="product_description" class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                <textarea name="description" id="product_description" rows="3"
+                    class="w-full border-gray-300 rounded-md shadow-sm focus:ring-pink-400 focus:border-pink-400"></textarea>
+            </div>
+
+            <div>
+                <label for="product_price" class="block text-sm font-medium text-gray-700 mb-2">Price</label>
+                <input type="number" name="price" id="product_price"
+                    class="w-full border-gray-300 rounded-md shadow-sm focus:ring-pink-400 focus:border-pink-400" required>
+            </div>
+
+            <div>
+                <label for="product_category" class="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                <input type="text" name="category" id="product_category" placeholder="e.g., Fashion, Electronics"
+                    class="w-full border-gray-300 rounded-md shadow-sm focus:ring-pink-400 focus:border-pink-400" required>
+            </div>
+
+            <div>
+                <label for="product_thumbnail_url" class="block text-sm font-medium text-gray-700 mb-2">Thumbnail URL</label>
+                <input type="url" name="thumbnail_url" id="product_thumbnail_url"
+                    class="w-full border-gray-300 rounded-md shadow-sm focus:ring-pink-400 focus:border-pink-400">
+                <p class="text-xs text-gray-500 mt-1">Enter the URL for the product image.</p>
+            </div>
+
+            <div class="flex items-center space-x-2">
+                <input type="checkbox" name="is_featured" id="is_featured"
+                    class="text-pink-400 focus:ring-pink-400 border-gray-300 rounded">
+                <label for="is_featured" class="text-sm text-gray-700">Mark as Featured</label>
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-4 pt-6 border-t border-gray-200">
+                <button type="button" id="cancelAddProduct"
+                    class="order-2 sm:order-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-md font-medium hover:bg-gray-50 transition-colors text-center">
+                    Cancel
+                </button>
+                <button type="submit" id="saveProductBtn"
+                    class="order-1 sm:order-2 flex-1 bg-pink-400 text-white px-6 py-3 rounded-md font-medium hover:bg-pink-500 transition-colors">
+                    Save Product
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

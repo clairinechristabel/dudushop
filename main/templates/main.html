@@ -7,90 +7,319 @@
 
 {% block content %}
 {% include 'navbar.html' %}
+{% include 'modal.html' %}
+{% include 'toast.html' %}
 
-<!-- Hero Background -->
 <div class="relative w-full h-96 bg-cover bg-center"
-     style="background-image: url('{% static "images/main-background.jpeg" %}');">
-  <div class="absolute inset-0 flex items-center justify-center">
-    <h1 class="text-4xl md:text-6xl font-bold text-white drop-shadow-lg">
-      Welcome to Dudushop
-    </h1>
-  </div>
-</div>
-
-<!-- Product Container -->
-<div class="relative -mt-16 z-10">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="bg-white rounded-3xl shadow-lg p-8">
-
-      <!-- Filter Section -->
-      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
-        <h2 class="text-2xl font-bold text-pink-600 mb-4 sm:mb-0">Our Products</h2>
-        <div class="flex space-x-3">
-          <a href="?filter=all" 
-             class="{% if request.GET.filter == 'all' or not request.GET.filter %} bg-pink-400 text-white {% else %} bg-white text-gray-700 border border-pink-300 {% endif %} px-4 py-2 rounded-xl font-medium transition hover:bg-pink-500 hover:text-white">
-            All Products
-          </a>
-          <a href="?filter=my" 
-             class="{% if request.GET.filter == 'my' %} bg-pink-400 text-white {% else %} bg-white text-gray-700 border border-pink-300 {% endif %} px-4 py-2 rounded-xl font-medium transition hover:bg-pink-500 hover:text-white">
-            My Products
-          </a>
-        </div>
-      </div>
-
-      <!-- Product Grid -->
-      {% if not product_list %}
-        <div class="bg-pink-50 rounded-xl border border-pink-200 p-12 text-center">
-          <div class="w-32 h-32 mx-auto mb-4">
-            <img src="{% static 'image/no-product.png' %}" alt="No product" class="w-full h-full object-contain">
-          </div>
-          <h3 class="text-lg font-medium text-gray-900 mb-2">No products found</h3>
-          <p class="text-gray-500 mb-6">Add your first product and start selling at Dudushop.</p>
-        </div>
-      {% else %}
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {% for product in product_list %}
-            <div class="bg-white rounded-2xl border border-pink-200 shadow hover:shadow-md transition overflow-hidden flex flex-col">
-              <img src="{{ product.thumbnail }}" alt="{{ product.name }}" 
-                   class="w-full h-48 object-cover">
-              <div class="p-4 flex flex-col flex-1">
-                <h3 class="text-lg font-semibold text-gray-900">{{ product.name }}</h3>
-                <p class="text-gray-600 mb-2">Rp{{ product.price }} • {{ product.category }}</p>
-                {% if product.is_featured %}
-                  <span class="inline-block text-xs text-pink-600 font-medium bg-pink-50 border border-pink-200 px-2 py-1 rounded-lg mb-2">
-                    Featured
-                  </span>
-                {% endif %}
-
-                <div class="mt-auto flex space-x-3">
-                  <!-- Detail Button -->
-                  <a href="{% url 'main:detail_product' product.id %}" 
-                     class="flex-1 text-center px-4 py-2 bg-pink-400 text-white rounded-xl font-medium hover:bg-pink-500 transition">
-                    Detail
-                  </a>
-
-                  {% if request.GET.filter == 'my' %}
-                    <!-- Edit Button -->
-                    <a href="{% url 'main:edit_product' product.id %}" 
-                       class="px-4 py-2 border border-blue-300 rounded-xl text-blue-500 hover:bg-blue-50 transition">
-                      Edit
-                    </a>
-                    <!-- Delete Button -->
-                    <form method="POST" action="{% url 'main:delete_product' product.id %}">
-                      {% csrf_token %}
-                      <button type="submit" class="px-4 py-2 border border-red-300 rounded-xl text-red-500 hover:bg-red-50 transition">
-                        Delete
-                      </button>
-                    </form>
-                  {% endif %}
-                </div>
-              </div>
-            </div>
-          {% endfor %}
-        </div>
-      {% endif %}
-
+    style="background-image: url('{% static "images/main-background.jpeg" %}');">
+    <div class="absolute inset-0 flex items-center justify-center">
+        <h1 class="text-4xl md:text-6xl font-bold text-white drop-shadow-lg">
+            Welcome to Dudushop
+        </h1>
     </div>
-  </div>
 </div>
+
+<div class="relative -mt-16 z-10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="bg-white rounded-3xl shadow-lg p-8">
+
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
+                <h2 class="text-2xl font-bold text-pink-600 mb-4 sm:mb-0">Our Products</h2>
+                <div class="flex space-x-3">
+                    <button id="filter-all"
+                        class="bg-pink-400 text-white px-4 py-2 rounded-xl font-medium transition hover:bg-pink-500 hover:text-white">
+                        All Products
+                    </button>
+                    <button id="filter-my"
+                        class="bg-white text-gray-700 border border-pink-300 px-4 py-2 rounded-xl font-medium transition hover:bg-pink-500 hover:text-white">
+                        My Products
+                    </button>
+                    {% if user.is_authenticated %}
+                      {% endif %}
+                </div>
+            </div>
+
+            <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                </div>
+
+            <div id="empty-state" class="hidden bg-pink-50 rounded-xl border border-pink-200 p-12 text-center">
+                <div class="w-32 h-32 mx-auto mb-4">
+                    <img src="{% static 'image/no-product.png' %}" alt="No product" class="w-full h-full object-contain">
+                </div>
+                <h3 class="text-lg font-medium text-gray-900 mb-2">No products found</h3>
+                <p class="text-gray-500 mb-6">Add your first product and start selling at Dudushop.</p>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    // Global Variables
+    const modal = document.getElementById("addProductModal");
+    const form = document.getElementById("addProductForm");
+    const modalTitle = document.getElementById("modalTitle");
+    const saveBtn = document.getElementById("saveProductBtn");
+    let currentFilter = "all";
+
+    // --- Helper Functions ---
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== "") {
+            const cookies = document.cookie.split(";");
+            for (let cookie of cookies) {
+                cookie = cookie.trim();
+                if (cookie.startsWith(name + "=")) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    function updateFilterStyles(filter) {
+        const allBtn = document.getElementById("filter-all");
+        const myBtn = document.getElementById("filter-my");
+        const activeClass = "bg-pink-400 text-white px-4 py-2 rounded-xl font-medium transition hover:bg-pink-500 hover:text-white";
+        const inactiveClass = "bg-white text-gray-700 border border-pink-300 px-4 py-2 rounded-xl font-medium transition hover:bg-pink-500 hover:text-white";
+
+        if (filter === "all") {
+            allBtn.className = activeClass;
+            myBtn.className = inactiveClass;
+        } else {
+            allBtn.className = inactiveClass;
+            myBtn.className = activeClass;
+        }
+    }
+    
+    // ------------------------------------------
+    // MODAL & FORM HANDLERS (CRUD UI)
+    // ------------------------------------------
+
+    function hideModal() {
+        modal.classList.add("hidden");
+        form.reset();
+        // Refresh list setelah Add/Edit/Cancel
+        loadProducts(currentFilter); 
+    }
+
+    function showAddModal() {
+        modalTitle.innerText = "Add New Product";
+        document.getElementById("modalSubtitle").innerText = "Fill in the product details below";
+        saveBtn.innerText = "Save Product";
+        form.reset();
+        document.getElementById("product_id_input").value = ""; // Pastikan ID kosong
+        
+        // Set form handler ke fungsi Add Product
+        form.onsubmit = addProduct; 
+        modal.classList.remove("hidden");
+    }
+
+  async function showEditModal(id) {
+        modalTitle.innerText = "Edit Product";
+        document.getElementById("modalSubtitle").innerText = `Editing product ID: ${id}`;
+        saveBtn.innerText = "Update Product";
+        
+        // 1. Ambil data produk spesifik
+        try {
+            // Menggunakan path hardcode yang bersih karena URL resolver gagal saat loading template.
+            // ID sudah pasti berupa UUID (string) dari tombol Edit.
+            const response = await fetch(`/json/${id}/`); 
+            
+            if (!response.ok) throw new Error("Failed to fetch product data. Status: " + response.status);
+            
+            const data = await response.json();
+
+            // 2. Isi form dengan data
+            document.getElementById("product_id_input").value = id; 
+            document.getElementById("product_name").value = data.name;
+            document.getElementById("product_description").value = data.description;
+            document.getElementById("product_price").value = data.price;
+            document.getElementById("product_category").value = data.category;
+            // Pastikan URL thumbnail tidak null
+            document.getElementById("product_thumbnail_url").value = data.thumbnail || "";
+            document.getElementById("is_featured").checked = data.is_featured;
+
+            // 3. Set form handler ke fungsi Edit Product
+            form.onsubmit = (event) => editProduct(event, id);
+            
+            modal.classList.remove("hidden");
+
+        } catch (error) {
+            console.error("Error loading product for edit:", error);
+            alert("Gagal memuat detail produk: " + error.message);
+        }
+    }
+    
+
+    async function loadProducts(filter = "all") {
+        const grid = document.getElementById("product-grid");
+        const emptyState = document.getElementById("empty-state");
+        grid.innerHTML = `<p class='text-gray-500 text-center col-span-3'>Loading products...</p>`;
+
+        try {
+            const response = await fetch("{% url 'main:show_json' %}");
+            if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+            const data = await response.json();
+
+            let filtered = data;
+            {% if user.is_authenticated %}
+              // Filter di frontend menggunakan user_id yang dikirim dari views.py
+              if (filter === "my") {
+                filtered = data.filter(p => p.fields.user_id === {{ user.pk }}); 
+              }
+            {% endif %}
+
+            grid.innerHTML = "";
+            if (filtered.length === 0) {
+                emptyState.classList.remove("hidden");
+                return;
+            } else {
+                emptyState.classList.add("hidden");
+            }
+
+            updateFilterStyles(filter);
+
+            filtered.forEach(p => {
+                const f = p.fields;
+                const id = p.pk;
+                const card = document.createElement("div");
+                card.className = "bg-white rounded-2xl border border-pink-200 shadow hover:shadow-md transition overflow-hidden flex flex-col";
+                
+                const imageUrl = f.thumbnail || "{% static 'images/placeholder.png' %}";
+                
+                card.innerHTML = `
+                    <img src="${imageUrl}" alt="${f.name}" class="w-full h-48 object-cover">
+                    <div class="p-4 flex flex-col flex-1">
+                        <h3 class="text-lg font-semibold text-gray-900">${f.name}</h3>
+                        <p class="text-gray-600 mb-2">Rp${f.price} • ${f.category}</p>
+                        ${f.is_featured ? `<span class="inline-block text-xs text-pink-600 font-medium bg-pink-50 border border-pink-200 px-2 py-1 rounded-lg mb-2">Featured</span>` : ""}
+                        <div class="mt-auto flex space-x-3">
+                            <a href="/detail/${id}" class="flex-1 text-center px-4 py-2 bg-pink-400 text-white rounded-xl font-medium hover:bg-pink-500 transition">Detail</a>
+                            {% if user.is_authenticated %}
+                              ${f.user_id === {{ user.pk }} ? `
+                                <button onclick="showEditModal('${id}')" class="px-4 py-2 border border-blue-300 rounded-xl text-blue-500 hover:bg-blue-50 transition">Edit</button>
+                                <button onclick="deleteProduct('${id}')" class="px-4 py-2 border border-red-300 rounded-xl text-red-500 hover:bg-red-50 transition">Delete</button>
+                              ` : ""}
+                            {% endif %}
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+
+        } catch (error) {
+            grid.innerHTML = `<p class='text-red-500 text-center col-span-3'>Error loading products: Network or JSON parsing failed.</p>`;
+            console.error("Fatal Error loading products (Network/Parsing):", error);
+        }
+    }
+
+    async function addProduct(e) {
+        e.preventDefault();
+        const formData = new FormData(form);
+        
+        // Pastikan is_featured memiliki nilai 'off' jika tidak dicentang (untuk views.py)
+        if (!formData.has('is_featured')) {
+            formData.append('is_featured', 'off');
+        }
+
+        const response = await fetch("{% url 'main:add_product_ajax' %}", {
+            method: "POST",
+            headers: { 
+                "X-CSRFToken": getCookie("csrftoken"),
+            },
+            body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            hideModal(); 
+            if (typeof showToast === 'function') {
+                showToast("Product added successfully!", "✅");
+            }
+        } else {
+            alert("Failed to add product: " + (data.error || "Unknown error."));
+        }
+    }
+
+    async function editProduct(e, id) {
+        e.preventDefault();
+        const formData = new FormData(form);
+        
+        // Pastikan is_featured memiliki nilai 'off' jika tidak dicentang
+        if (!formData.has('is_featured')) {
+            formData.append('is_featured', 'off');
+        }
+
+        const response = await fetch(`/edit-product-ajax/${id}/`, {
+            method: "POST",
+            headers: { 
+                "X-CSRFToken": getCookie("csrftoken"),
+            },
+            body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            hideModal();
+            if (typeof showToast === 'function') {
+                showToast("Product updated successfully!", "✏️");
+            }
+        } else {
+            alert("Failed to update product: " + (data.error || "Unknown error."));
+        }
+    }
+    
+    async function deleteProduct(id) {
+        if (!confirm("Are you sure you want to delete this product?")) return;
+        const response = await fetch(`/delete-product/${id}/`, {
+            method: "POST",
+            headers: { "X-CSRFToken": getCookie("csrftoken") }
+        });
+        
+        if (response.ok) {
+            try {
+                const data = await response.json();
+                if (data.success) {
+                    loadProducts(currentFilter);
+                    if (typeof showToast === 'function') { 
+                        showToast("Product deleted successfully!", "🗑️");
+                    } 
+                } else {
+                    alert("Failed to delete product: " + (data.error || "Unknown server error."));
+                }
+            } catch (e) {
+                alert("Failed to delete product. Server returned invalid data.");
+                console.error("JSON parse error on delete:", e);
+            }
+        } else {
+            alert("Failed to delete product. Check console for status code.");
+            console.error("Delete failed with HTTP status:", response.status);
+        }
+    }
+
+
+    // --- Initialization & Event Listeners ---
+
+    document.getElementById("closeModalBtn")?.addEventListener("click", hideModal);
+    document.getElementById("cancelAddProduct")?.addEventListener("click", hideModal);
+    
+    document.getElementById("filter-all").addEventListener("click", () => {
+        currentFilter = "all";
+        loadProducts("all");
+    });
+    document.getElementById("filter-my").addEventListener("click", () => {
+        currentFilter = "my";
+        loadProducts("my");
+    });
+
+    document.addEventListener("DOMContentLoaded", () => {
+        loadProducts("all");
+    });
+</script>
+
 {% endblock content %}
