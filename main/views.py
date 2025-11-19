@@ -7,10 +7,13 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-import datetime
+import datetime, requests
 from django.urls import reverse
 from django.http import HttpResponseRedirect
-from django.views.decorators.csrf import csrf_exempt # Tambahkan ini jika Anda belum menghapusnya
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.html import strip_tags
+import json
+from django.http import JsonResponse
 
 # --- VIEWS UTAMA & CRUD AJAX (Sama seperti sebelumnya) ---
 
@@ -245,3 +248,78 @@ def logout_user(request):
         
     # Jika method GET (misalnya diakses langsung dari browser), tetap redirect
     return HttpResponseRedirect(reverse('main:login'))
+
+def proxy_image(request):
+    image_url = request.GET.get('url')
+    if not image_url:
+        return HttpResponse('No URL provided', status=400)
+    
+    try:
+        # Fetch image from external source
+        response = requests.get(image_url, timeout=10)
+        response.raise_for_status()
+        
+        # Return the image with proper content type
+        return HttpResponse(
+            response.content,
+            content_type=response.headers.get('Content-Type', 'image/jpeg')
+        )
+    except requests.RequestException as e:
+        return HttpResponse(f'Error fetching image: {str(e)}', status=500)
+    
+@csrf_exempt
+def create_product_flutter(request):
+    if request.method == 'POST':
+        
+        data = json.loads(request.body)
+        
+        name = strip_tags(data.get("name", ""))
+        price = data.get("price", 0)
+        description = strip_tags(data.get("description", ""))
+        category = data.get("category", "")
+        thumbnail = data.get("thumbnail", "")
+        is_featured = data.get("is_featured", False)
+        user = request.user
+
+        new_product = Shop(
+            name=name,
+            price=int(price),
+            description=description,
+            category=category,
+            thumbnail=thumbnail,
+            is_featured=is_featured,
+            user=user
+        )
+        
+        new_product.save()
+
+        return JsonResponse({"status": "success"}, status=200)
+    else:
+        return JsonResponse({"status": "error"}, status=401)
+    
+@login_required
+def show_json_by_user(request):
+    # 1. Filter produk hanya milik user yang sedang login
+    products_list = Shop.objects.filter(user=request.user)
+    
+    # 2. Buat format JSON manual agar sesuai dengan 'show_json' yang sudah ada
+    #    (Penting: handle user username dan user_id agar tidak error di Flutter)
+    json_data = [
+        {
+            'pk': product.id, 
+            'fields': {
+                'name': product.name,
+                'price': float(product.price),
+                'description': product.description,
+                'thumbnail': product.thumbnail if product.thumbnail else "", 
+                'category': product.category,
+                'is_featured': product.is_featured,
+                'user': product.user.username if product.user else None, 
+                'user_id': product.user.id if product.user else None,
+            }
+        }
+        for product in products_list
+    ]
+    
+    # 3. Return sebagai JsonResponse
+    return JsonResponse(json_data, safe=False)
